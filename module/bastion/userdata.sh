@@ -5,6 +5,10 @@ echo "${privatekey}" > /home/ubuntu/.ssh/id_rsa
 chmod 400 /home/ubuntu/.ssh/id_rsa
 chown ubuntu:ubuntu /home/ubuntu/.ssh/id_rsa
 
+
+# install amazon-ssm-agent
+sudo dnf install -y https://s3."${region}".amazonaws.com/amazon-ssm-"${region}"/latest/linux_amd64/amazon-ssm-agent.rpm
+
 # Set hostname
 hostnamectl set-hostname bastion
 
