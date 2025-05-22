@@ -38,3 +38,9 @@ terraform.rc
 feature/chijioke
 *.terraform.
 .terraform.*
+
+# Environment variable files
+.env
+*.env
+.env.*
+

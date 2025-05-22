@@ -8,13 +8,17 @@ chown ubuntu:ubuntu /home/ubuntu/.ssh/id_rsa
 # Set hostname
 hostnamectl set-hostname bastion
 
-# Install CloudWatch Agent (Ubuntu)
-wget https://s3.amazonaws.com/amazoncloudwatch-agent/ubuntu/amd64/latest/amazon-cloudwatch-agent.deb
-dpkg -i amazon-cloudwatch-agent.deb
-INSTANCE_ID=$(curl http://169.254.169.254/latest/meta-data/instance-id)
+# install amazon-ssm-agent
+sudo dnf install -y https://s3."${region}".amazonaws.com/amazon-ssm-"${region}"/latest/linux_amd64/amazon-ssm-agent.rpm
+curl "https://s3.amazonaws.com/session-manager-downloads/plugin/latest/linux_64bit/session-manager-plugin.rpm" -o "session-manager-plugin.rpm"
+sudo yum install -y session-manager-plugin.rpm
 
-
-
+# Installing awscli
+sudo yum install unzip -y
+curl "https://awscli.amazonaws.com/awscli-exe-linux-x86_64.zip" -o "awscliv2.zip"
+unzip awscliv2.zip
+sudo ./aws/install
+sudo ln -svf /usr/local/bin/aws /usr/bin/aws
 
 # Install New Relic
 curl -Ls https://download.newrelic.com/install/newrelic-cli/scripts/install.sh | bash && \

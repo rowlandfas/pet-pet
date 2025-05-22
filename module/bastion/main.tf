@@ -16,8 +16,10 @@ resource "aws_security_group" "bastion-sg" {
   }
 }
 
+# Create IAM role for SSM
 resource "aws_iam_role" "ssm-role" {
   name = "bastion-ssm-role"
+
 
   assume_role_policy = jsonencode({
     Version = "2012-10-17",
@@ -31,11 +33,13 @@ resource "aws_iam_role" "ssm-role" {
   })
 }
 
+# Attach the SSM policy to the role
 resource "aws_iam_role_policy_attachment" "ssm-policy" {
   role       = aws_iam_role.ssm-role.name
   policy_arn = "arn:aws:iam::aws:policy/AmazonSSMManagedInstanceCore"
 }
 
+# create IAM instance profile
 resource "aws_iam_instance_profile" "ssm-profile" {
   name = "bastion-ssm-profile"
   role = aws_iam_role.ssm-role.name
@@ -73,6 +77,7 @@ resource "aws_launch_template" "bastion-lt" {
     privatekey = var.privatekey, 
     nr-key     = var.nr-key,
     nr-acc-id  = var.nr-acc-id
+    region    = var.region
   }))
   tags = {
     Name = "${var.name}-bastion"
