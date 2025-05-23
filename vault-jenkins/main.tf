@@ -1,16 +1,13 @@
 locals {
-  name = "team1-autodiscovery"
-  name2 = "vault-jenkins-team1"
+  name = "vault-jenkins-team1"
 }
-
 resource "aws_vpc" "vpc" {
   cidr_block       = "10.0.0.0/16"
   instance_tenancy = "default"
 tags = {
-    Name = "${local.name2}-vpc"
+    Name = "${local.name}-vpc"
   }
 }
-
 # create public subnet 1
 resource "aws_subnet" "pub_sub" {
   vpc_id            = aws_vpc.vpc.id
@@ -18,25 +15,17 @@ resource "aws_subnet" "pub_sub" {
   availability_zone = "eu-west-1a"
 
   tags = {
-    Name = "${local.name2}-pub_sub"
+    Name = "${local.name}-pub_sub"
   }
 }
-
-
-
 # create internet gateway
 resource "aws_internet_gateway" "igw" {
   vpc_id = aws_vpc.vpc.id
 
   tags = {
-    Name = "${local.name2}-igw"
+    Name = "${local.name}-igw"
   }
 }
-
-
-
-
-
 # Create route table for public subnet
 resource "aws_route_table" "pub_rt" {
   vpc_id = aws_vpc.vpc.id
@@ -45,18 +34,14 @@ resource "aws_route_table" "pub_rt" {
     gateway_id = aws_internet_gateway.igw.id
   }
   tags = {
-    Name = "${local.name2}-pub_rt"
+    Name = "${local.name}-pub_rt"
   }
 }
-
-
 # Creating route table association for public_subnet_1
 resource "aws_route_table_association" "ass-public_subnet" {
   subnet_id      = aws_subnet.pub_sub.id
   route_table_id = aws_route_table.pub_rt.id
 }
-
-
 # Create keypair resource
 resource "tls_private_key" "keypair" {
   algorithm = "RSA"
@@ -128,9 +113,6 @@ resource "aws_security_group" "jenkins_sg" {
   name        = "${local.name}-jenkins-sg"
   description = "Allow SSH and HTTPS"
   vpc_id      = aws_vpc.vpc.id 
-  
-  
-
   ingress {
     from_port   = 8080
     to_port     = 8080
@@ -222,12 +204,10 @@ resource "aws_acm_certificate_validation" "team1_cert_validation" {
 }
 
 # Create Security group for the jenkins elb
-
 resource "aws_security_group" "jenkins-elb-sg" {
   name        = "${local.name}-jenkins-elb-sg"
   description = "Allow HTTPS"
   vpc_id      = aws_vpc.vpc.id 
-
   ingress {
     from_port   = 443
     to_port     = 443
@@ -239,6 +219,9 @@ resource "aws_security_group" "jenkins-elb-sg" {
     to_port     = 0
     protocol    = "-1"
     cidr_blocks = ["0.0.0.0/0"]
+  }
+    tags = {
+    Name = "${local.name}-jenkins-elb-sg"
   }
 }
 
