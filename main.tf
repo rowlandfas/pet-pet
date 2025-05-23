@@ -35,3 +35,13 @@ module "ansible" {
   nr-key = ""
   nr-acc-id = ""
 }
+module "database" {
+  source    = "./module/database"
+  name      = local.name
+  pri-sub-1 = module.vpc.pri_sub1_id
+  pri-sub-2 = module.vpc.pri_sub2_id
+  bastion-sg   = module.bastion.bastion-sg
+  vpc-id    = module.vpc.vpc_id
+  stage-sg  = module.stage-env.stage-sg
+  prod-sg   = module.prod-env.prod-sg
+}
