@@ -329,7 +329,7 @@ resource "aws_elb" "vault_elb" {
   connection_draining         = true
   connection_draining_timeout = 400
   tags = {
-    Name = "${local.name}-jenkins-server"
+    Name = "${local.name}-vault-server"
   }
 }
 

@@ -3,9 +3,15 @@
 #   profile = "bukky_int"
 # }
 
+# # create aws provider
+# provider "aws" {
+#   region  = "eu-west-3"
+#   profile = "Lington"
+# }
+
+
 # create aws provider
 provider "aws" {
   region  = "eu-west-1"
   profile = "eu-team-1"
 }
-
