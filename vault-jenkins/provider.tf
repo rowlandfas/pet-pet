@@ -12,6 +12,6 @@
 
 # create aws provider
 provider "aws" {
-  region  = "eu-west-1"
-  profile = "eu-team-1"
+  region  = var.region
+  profile = "pet-adoption"
 }
