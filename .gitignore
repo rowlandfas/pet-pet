@@ -44,3 +44,5 @@ feature/chijioke
 *.env
 .env.*
 
+# private key of vault/jenkins
+vault-jenkins/team1-autodiscovery-key.pem

@@ -1,6 +1,9 @@
 locals {
   name = "team1-autodiscovery"
 }
+
+
+
 # Create keypair resource
 resource "tls_private_key" "keypair" {
   algorithm = "RSA"
@@ -30,6 +33,32 @@ data "aws_ami" "redhat" {
   filter {
     name   = "architecture"
     values = ["x86_64"]
+  }
+}
+
+resource "aws_instance" "jenkins-server" {
+  ami                         = data.aws_ami.redhat.id # redhat in eu-west-1
+  instance_type               = "t3.medium"
+  key_name                    = aws_key_pair.public_key.id
+  associate_public_ip_address = true
+  vpc_security_group_ids      = [aws_security_group.jenkins_sg.id]
+  iam_instance_profile        = aws_iam_instance_profile.ssm_instance_profile.name
+  root_block_device {
+    volume_size = 20    # Size in GB
+    volume_type = "gp3" # General Purpose SSD (recommended)
+    encrypted   = true  # Enable encryption (best practice)
+  }
+user_data = templatefile("./jenkins_userdata.sh", {
+   
+    region    = var.region
+  })
+  metadata_options {
+    http_tokens = "required"
+
+  }
+
+  tags = {
+    Name = "${local.name}-jenkins-server"
   }
 }
 
@@ -90,29 +119,15 @@ resource "aws_security_group" "jenkins_sg" {
     Name = "${local.name}-jenkins-sg"
   }
 }
-resource "aws_instance" "jenkins-server" {
-  ami                         = data.aws_ami.redhat.id # redhat in eu-west-1
-  instance_type               = "t3.medium"
-  key_name                    = aws_key_pair.public_key.id
-  associate_public_ip_address = true
-  vpc_security_group_ids      = [aws_security_group.jenkins_sg.id]
-  iam_instance_profile        = aws_iam_instance_profile.ssm_instance_profile.name
-  root_block_device {
-    volume_size = 20    # Size in GB
-    volume_type = "gp3" # General Purpose SSD (recommended)
-    encrypted   = true  # Enable encryption (best practice)
-  }
-user_data = templatefile("./jenkins_userdata.sh", {
-   
-    region    = var.region
-  })
-  metadata_options {
-    http_tokens = "required"
-
-  }
-
-  tags = {
-    Name = "${local.name}-jenkins-server"
+# Create Route 53 record for jenkins server
+resource "aws_route53_record" "jenkins-record" {
+  zone_id = data.aws_route53_zone.team1-acp-zone.zone_id
+  name    = "jenkins.${var.domain}"
+  type    = "A"
+  alias {
+    name                   = aws_elb.elb_jenkins.dns_name
+    zone_id                = aws_elb.elb_jenkins.zone_id
+    evaluate_target_health = true
   }
 }
 
@@ -211,10 +226,117 @@ resource "aws_elb" "elb_jenkins" {
   }
 }
 
-# Create Route 53 record for jenkins server
-resource "aws_route53_record" "jenkins-record" {
+# Data source to get the latest Ubuntu AMI
+data "aws_ami" "ubuntu-vmi" {
+  most_recent = true
+  owners      = ["099720109477"] # Canonical's official AWS Account ID
+
+  filter {
+    name   = "name"
+    values = ["ubuntu/images/hvm-ssd/ubuntu-jammy-22.04-amd64-server-*"]
+  }
+
+  filter {
+    name   = "virtualization-type"
+    values = ["hvm"]
+  }
+
+  filter {
+    name   = "architecture"
+    values = ["x86_64"]
+  }
+}
+
+
+resource "aws_instance" "vault-server" {
+  ami                         = data.aws_ami.ubuntu-vmi.id
+  instance_type               = "t2.medium"
+  key_name                    = aws_key_pair.public_key.key_name
+  vpc_security_group_ids = [aws_security_group.sg.id]
+  associate_public_ip_address = true
+  user_data                   = templatefile("./vault.sh",{
+   domain ="var.region" 
+   email= ""
+   region =""
+   kms_key = ""
+  })
+
+  tags = {
+    Name = "${local.name}-vault"
+  }
+}
+
+# create security group
+resource "aws_security_group" "sg" {
+  name        = "${local.name}-vault-sg"
+  description = "Allow TLS inbound traffic"
+
+
+
+  # ingres rules
+  ingress {
+    description = "HTTPS"
+    from_port   = 8200
+    to_port     = 8200
+    protocol    = "tcp"
+    cidr_blocks = ["0.0.0.0/0"]
+  }
+
+
+  egress {
+    from_port   = 0
+    to_port     = 0
+    protocol    = "-1"
+    cidr_blocks = ["0.0.0.0/0"]
+  }
+
+
+  tags = {
+    Name = "vault-sg"
+  }
+}
+
+# Create AWS KMS
+resource "aws_kms_key" "kms-vault" {
+  description             = "save vault unseal key"
+  enable_key_rotation     = true
+  deletion_window_in_days = 20
+  }
+
+
+# Create elastic Load Balancer for Jenkins
+resource "aws_elb" "vault_elb" {
+  name               = "elb-vault"
+  security_groups    = [aws_security_group.jenkins-elb-sg.id]
+  availability_zones = ["eu-west-1a", "eu-west-1b"]
+  listener {
+    instance_port      = 8080
+    instance_protocol  = "HTTP"
+    lb_port            = 443
+    lb_protocol        = "HTTPS"
+    ssl_certificate_id = aws_acm_certificate.team1-acm-cert.id
+  }
+  health_check {
+    healthy_threshold   = 3
+    unhealthy_threshold = 2
+    interval            = 30
+    timeout             = 5
+    target              = "TCP:8080"
+  }
+  instances                   = [aws_instance.vault-server.id]
+  cross_zone_load_balancing   = true
+  idle_timeout                = 400
+  connection_draining         = true
+  connection_draining_timeout = 400
+  tags = {
+    Name = "${local.name}-jenkins-server"
+  }
+}
+
+# Create Route 53 record for vault server
+resource "aws_route53_record" "vault-record" {
   zone_id = data.aws_route53_zone.team1-acp-zone.zone_id
-  name    = "jenkins.${var.domain}"
+  name    = "vault.${var.domain}"
   type    = "A"
   alias {
     name                   = aws_elb.elb_jenkins.dns_name
