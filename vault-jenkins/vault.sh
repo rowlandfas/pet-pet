@@ -1,7 +1,16 @@
   #!/bin/bash
 
 # Update packages
-sudo apt update
+sudo apt update -y
+
+# Downloading the SSM agent for ubuntu
+wget https://s3.amazonaws.com/amazon-ssm-eu-west-1/latest/debian_amd64/amazon-ssm-agent.deb
+# Install SSM Ageny
+sudo dpkg -i amazon-ssm-agent.deb -y
+# Enable and Start the Agent
+sudo systemctl enable amazon-ssm-agent
+sudo systemctl start amazon-ssm-agent
+
 
 # Install Consul
 sudo wget https://releases.hashicorp.com/consul/1.7.3/consul_1.7.3_linux_amd64.zip
