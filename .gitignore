@@ -43,4 +43,5 @@ feature/chijioke
 .env
 *.env
 .env.*
+.DS_store
 
