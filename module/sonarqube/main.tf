@@ -2,7 +2,7 @@
 # Creating security group for SonarQube
 resource "aws_security_group" "sonarqube-sg" {
   name        = "${var.name}-sonarqube-sg"
-  description = "Allow inbound traffic for SonarQube and all outbound traffic"
+  description = "Allow inbound traffic from lb and all outbound traffic"
   vpc_id      = var.vpc
 
   # Ingress rule: Allow SonarQube web UI (port 9000) from within VPC
@@ -12,7 +12,7 @@ resource "aws_security_group" "sonarqube-sg" {
     to_port     = 9000
     protocol    = "tcp"
     security_groups = [ aws_security_group.lb-sg.id ]
-    cidr_blocks = [var.vpc_cidr_block]  # Allow from the VPC CIDR block
+    # cidr_blocks = [var.vpc_cidr_block]  # Allow from the VPC CIDR block
   }
 
   # Egress rule: Allow all outbound traffic
@@ -83,16 +83,16 @@ resource "aws_instance" "sonarqube-server" {
   user_data              = file("${path.module}/sonar_userdata.sh")
   
   tags = {
-    Name = "${var.name}-ansible-server"
+    Name = "${var.name}-sonarqube-server"
   }
 }
 
 # create loadbalancer for the sonarqube
 resource "aws_lb" "sonarqube-lb" {
   name               = "${var.name}-sonarqube-lb"
-  load_balancer_type = "application"
-  security_groups    = [aws_security_group.lb_sg.id]
-  subnets            = [aws_subnet.public_subnet_1.id]
+  load_balancer_type = "network"
+  security_groups    = [aws_security_group.lb-sg.id]
+  subnets            = [var.subnet_id]
 
   # enable_deletion_protection = true
   
@@ -122,7 +122,7 @@ resource "aws_route53_record" "sonarqube" {
   depends_on = [aws_lb.sonarqube-lb]
 }
 
-# create an IAM instance profile
+# create an IAM instance role
 resource "aws_iam_role" "sonarqube-role" {
   name = "${var.name}-sonarqube-role"
   

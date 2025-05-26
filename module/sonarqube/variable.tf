@@ -15,6 +15,7 @@ variable "vpc_cidr_block" {
   description = "The CIDR block of the VPC, used to define ingress/egress rules."
 }
 
+
 variable "keypair" {}
 
 variable "subnet_id" {}
