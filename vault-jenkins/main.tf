@@ -1,5 +1,46 @@
 locals {
-  name = "team1-autodiscovery"
+  name = "vault-jenkins-team1"
+}
+resource "aws_vpc" "vpc" {
+  cidr_block       = "10.0.0.0/16"
+  instance_tenancy = "default"
+tags = {
+    Name = "${local.name}-vpc"
+  }
+}
+# create public subnet 1
+resource "aws_subnet" "pub_sub" {
+  vpc_id            = aws_vpc.vpc.id
+  cidr_block        = "10.0.1.0/24"
+  availability_zone = "eu-west-1a"
+
+  tags = {
+    Name = "${local.name}-pub_sub"
+  }
+}
+# create internet gateway
+resource "aws_internet_gateway" "igw" {
+  vpc_id = aws_vpc.vpc.id
+
+  tags = {
+    Name = "${local.name}-igw"
+  }
+}
+# Create route table for public subnet
+resource "aws_route_table" "pub_rt" {
+  vpc_id = aws_vpc.vpc.id
+  route {
+    cidr_block = "0.0.0.0/0"
+    gateway_id = aws_internet_gateway.igw.id
+  }
+  tags = {
+    Name = "${local.name}-pub_rt"
+  }
+}
+# Creating route table association for public_subnet_1
+resource "aws_route_table_association" "ass-public_subnet" {
+  subnet_id      = aws_subnet.pub_sub.id
+  route_table_id = aws_route_table.pub_rt.id
 }
 # Create keypair resource
 resource "tls_private_key" "keypair" {
@@ -71,9 +112,7 @@ resource "aws_iam_instance_profile" "ssm_instance_profile" {
 resource "aws_security_group" "jenkins_sg" {
   name        = "${local.name}-jenkins-sg"
   description = "Allow SSH and HTTPS"
-  
-  
-
+  vpc_id      = aws_vpc.vpc.id 
   ingress {
     from_port   = 8080
     to_port     = 8080
@@ -95,6 +134,8 @@ resource "aws_instance" "jenkins-server" {
   instance_type               = "t3.medium"
   key_name                    = aws_key_pair.public_key.id
   associate_public_ip_address = true
+  subnet_id                   = aws_subnet.pub_sub.id
+
   vpc_security_group_ids      = [aws_security_group.jenkins_sg.id]
   iam_instance_profile        = aws_iam_instance_profile.ssm_instance_profile.name
   root_block_device {
@@ -163,11 +204,10 @@ resource "aws_acm_certificate_validation" "team1_cert_validation" {
 }
 
 # Create Security group for the jenkins elb
-
 resource "aws_security_group" "jenkins-elb-sg" {
   name        = "${local.name}-jenkins-elb-sg"
   description = "Allow HTTPS"
-
+  vpc_id      = aws_vpc.vpc.id 
   ingress {
     from_port   = 443
     to_port     = 443
@@ -180,13 +220,17 @@ resource "aws_security_group" "jenkins-elb-sg" {
     protocol    = "-1"
     cidr_blocks = ["0.0.0.0/0"]
   }
+    tags = {
+    Name = "${local.name}-jenkins-elb-sg"
+  }
 }
 
 # Create elastic Load Balancer for Jenkins
 resource "aws_elb" "elb_jenkins" {
   name               = "elb-jenkins"
   security_groups    = [aws_security_group.jenkins-elb-sg.id]
-  availability_zones = ["eu-west-1a", "eu-west-1b"]
+  subnets            = [aws_subnet.pub_sub.id]
+  
   listener {
     instance_port      = 8080
     instance_protocol  = "HTTP"
