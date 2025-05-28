@@ -88,38 +88,47 @@ resource "aws_instance" "sonarqube-server" {
 }
 
 # create loadbalancer for the sonarqube
-resource "aws_lb" "sonarqube-lb" {
-  name               = "${var.name}-sonarqube-lb"
-  load_balancer_type = "network"
+resource "aws_elb" "elb_sonarqube" {
+  name               = "${var.name}-sonarqube-elb"
   security_groups    = [aws_security_group.lb-sg.id]
-  subnets            = [var.subnet_id]
-
-  # enable_deletion_protection = true
+  subnets            = [var.subnets]
   
-  tags = {
-    Name = "${var.name}-sonarqube-lb"
+  listener {
+    instance_port      = 9000
+    instance_protocol  = "HTTP"
+    lb_port            = 443
+    lb_protocol        = "HTTPS"
+    ssl_certificate_id = var.certificate
   }
-}
-
-# Fetch the Hosted Zone
-data "aws_route53_zone" "main" {
-  name         = "learnnewway.site"  
-  private_zone = false          
+  health_check {
+    healthy_threshold   = 3
+    unhealthy_threshold = 2
+    interval            = 30
+    timeout             = 5
+    target              = "TCP:9000"
+  }
+  instances                   = [aws_instance.sonarqube-server.id]
+  cross_zone_load_balancing   = true
+  idle_timeout                = 400
+  connection_draining         = true
+  connection_draining_timeout = 400
+  tags = {
+    Name = "${var.name}-sonarqube-elb"
+  }
 }
 
 # Create a DNS record for the ALB
 resource "aws_route53_record" "sonarqube" {
-  zone_id = data.aws_route53_zone.main.zone_id
-  name    = "learnnewway.site"
+  zone_id = var.hosted_zone_id
+  name    = "sonarqube.${var.domain_name}"
   type    = "A"
 
   alias {
-    name                   = aws_lb.sonarqube-lb.dns_name
-    zone_id                = aws_lb.sonarqube-lb.zone_id
+    name                   = aws_elb.elb_sonarqube.dns_name
+    zone_id                = aws_elb.elb_sonarqube.zone_id
     evaluate_target_health = true
   }
 
-  depends_on = [aws_lb.sonarqube-lb]
 }
 
 # create an IAM instance role

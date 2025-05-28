@@ -2,6 +2,17 @@ locals {
   name = "team-1"
 }
 
+data "aws_route53_zone" "zone" {
+  name         = var.domain_name
+  private_zone = false
+}
+#calling acm certificate
+data "aws_acm_certificate" "cert" {
+  domain      = var.domain_name
+  types       = ["AMAZON_ISSUED"]
+  most_recent = true
+}
+
 module "vpc" {
   source = "./module/vpc"
   name   = local.name
@@ -46,3 +57,14 @@ module "database" {
   prod-sg   = module.prod-env.prod-sg
 }
 
+module "sonarqube" {
+  source = "./module/sonarqube"
+  name = local.name
+  vpc = module.vpc.vpc_id
+  vpc_cidr_block = "10.0.0.0/16"
+  keypair = module.vpc.public_key
+  subnet_id = module.vpc.pub_sub1_id
+  certificate = data.aws_acm_certificate.cert.arn
+  hosted_zone_id = data.aws_route53_zone.zone.id
+  domain_name = var.domain_name  
+}

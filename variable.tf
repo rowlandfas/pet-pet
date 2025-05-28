@@ -4,3 +4,7 @@ variable "nr-key" {
 variable "nr-acc-id" {
   default = 6496342
 }
+
+variable "domain_name" {
+  default = "set30.space"
+}
