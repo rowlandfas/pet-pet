@@ -81,7 +81,8 @@ resource "aws_instance" "sonarqube-server" {
   key_name               = var.keypair
   subnet_id              = var.subnet_id
   user_data              = file("${path.module}/sonar_userdata.sh")
-  
+  iam_instance_profile   = aws_iam_instance_profile.sonarqube_profile.name
+    
   tags = {
     Name = "${var.name}-sonarqube-server"
   }
