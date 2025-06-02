@@ -3,7 +3,7 @@
 set -e
 
 # === CONFIGURATION ===
-SONAR_VERSION="25.2.0.102705"
+SONAR_VERSION="25.5.0.107428"
 SONAR_USER="sonaruser"
 SONAR_DIR="/opt/sonarqube"
 DB_USER="sonar"
@@ -43,6 +43,8 @@ sed -i "s|#sonar.jdbc.url=.*|sonar.jdbc.url=jdbc:postgresql://localhost/${DB_NAM
 # === INCREASE FILE LIMITS ===
 echo "$SONAR_USER soft nofile 65536" >> /etc/security/limits.conf
 echo "$SONAR_USER hard nofile 65536" >> /etc/security/limits.conf
+echo "vm.max_map_count=262144" >> /etc/sysctl.conf
+sysctl -w vm.max_map_count=262144
 
 # === CREATE SYSTEMD SERVICE ===
 cat <<EOF > /etc/systemd/system/sonarqube.service
@@ -55,8 +57,10 @@ Type=forking
 ExecStart=$SONAR_DIR/bin/linux-x86-64/sonar.sh start
 ExecStop=$SONAR_DIR/bin/linux-x86-64/sonar.sh stop
 User=$SONAR_USER
+Group=$SONAR_USER
 LimitNOFILE=65536
-Restart=on-failure
+LimitNPROC=4096
+Restart=always
 
 [Install]
 WantedBy=multi-user.target
@@ -65,6 +69,7 @@ EOF
 ufw allow 9000/tcp
 
 # === ENABLE AND START SONARQUBE ===
+systemctl daemon-reexec
 systemctl daemon-reload
 systemctl enable sonarqube
 systemctl start sonarqube
@@ -82,7 +87,7 @@ apt install -y nginx
 cat <<EOF > /etc/nginx/sites-available/sonarqube
 server {
     listen 80;
-    server_name learnnewway.site;
+    server_name sonarqube.set30.site;
 
     location / {
         proxy_pass http://localhost:9000;

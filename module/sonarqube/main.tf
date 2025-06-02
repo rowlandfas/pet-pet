@@ -5,7 +5,7 @@ resource "aws_security_group" "sonarqube-sg" {
   description = "Allow inbound traffic from lb and all outbound traffic"
   vpc_id      = var.vpc
 
-  # Ingress rule: Allow SonarQube web UI (port 9000) from within VPC
+  # Ingress rule: Allow SonarQube web UI (port 9000) from loadbalancer sg
   ingress {
     description = "SonarQube Web UI (port 9000)"
     from_port   = 9000
@@ -40,6 +40,14 @@ resource "aws_security_group" "lb-sg" {
     description = "HTTPS (port 443)"
     from_port   = 443
     to_port     = 443
+    protocol    = "tcp"
+    cidr_blocks = ["0.0.0.0/0"]  # Allow from the VPC CIDR block
+  }
+
+  ingress {
+    description = "sonar port (port 9000)"
+    from_port   = 9000
+    to_port     = 9000
     protocol    = "tcp"
     cidr_blocks = [var.vpc_cidr_block]  # Allow from the VPC CIDR block
   }
@@ -82,6 +90,7 @@ resource "aws_instance" "sonarqube-server" {
   subnet_id              = var.subnet_id
   user_data              = file("${path.module}/sonar_userdata.sh")
   iam_instance_profile   = aws_iam_instance_profile.sonarqube_profile.name
+  associate_public_ip_address = true
     
   tags = {
     Name = "${var.name}-sonarqube-server"
@@ -118,7 +127,7 @@ resource "aws_elb" "elb_sonarqube" {
   }
 }
 
-# Create a DNS record for the ALB
+# Create a DNS record for the ELB
 resource "aws_route53_record" "sonarqube" {
   zone_id = var.hosted_zone_id
   name    = "sonarqube.${var.domain_name}"
