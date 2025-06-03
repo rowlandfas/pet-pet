@@ -52,9 +52,9 @@ resource "aws_launch_template" "prod_lnch_tmpl" {
   instance_type = "t2.medium"
   key_name      = var.key-name
   user_data = base64encode(templatefile("./module/prod-env/docker-script.sh", {
-    nexus-ip             = var.nexus-ip,
-    nr-key               = var.nr-key,
-    nr-acct-id           = var.nr-acct-id
+    nexus-ip   = var.nexus-ip,
+    nr-key     = var.nr-key,
+    nr-acct-id = var.nr-acct-id
   }))
 
   network_interfaces {
@@ -101,11 +101,11 @@ resource "aws_autoscaling_policy" "prod-asg-policy" {
 
 # Create Application Load Balancer for prod
 resource "aws_lb" "prod_LB" {
-  name                       = "${var.name}-prod-LB"
-  internal                   = false
-  load_balancer_type         = "application"
-  security_groups            = [aws_security_group.prod-sg.id]
-  subnets                    = [var.pub-subnet1, var.pub-subnet2]
+  name               = "${var.name}-prod-LB"
+  internal           = false
+  load_balancer_type = "application"
+  security_groups    = [aws_security_group.prod-sg.id]
+  subnets            = [var.pub-subnet1, var.pub-subnet2]
   tags = {
     Name = "${var.name}-prod-LB"
   }

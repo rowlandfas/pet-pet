@@ -64,7 +64,7 @@ resource "aws_launch_template" "bastion-lt" {
   name_prefix   = "${var.name}-bastion-"
   image_id      = data.aws_ami.ubuntu.id
   instance_type = "t2.micro"
-  key_name = var.keypair
+  key_name      = var.keypair
   iam_instance_profile {
     name = aws_iam_instance_profile.ssm-profile.name
   }
@@ -74,10 +74,10 @@ resource "aws_launch_template" "bastion-lt" {
     security_groups             = [aws_security_group.bastion-sg.id]
   }
   user_data = base64encode(templatefile("./module/bastion/userdata.sh", {
-    privatekey = var.privatekey, 
+    privatekey = var.privatekey,
     nr-key     = var.nr-key,
     nr-acc-id  = var.nr-acc-id
-    region    = var.region
+    region     = var.region
   }))
   tags = {
     Name = "${var.name}-bastion"

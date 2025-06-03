@@ -14,3 +14,8 @@ aws s3api create-bucket --bucket "$BUCKET_NAME" --region "$AWS_REGION" --profile
 aws s3api put-bucket-versioning --bucket "$BUCKET_NAME" --region "$AWS_REGION" --profile "$AWS_PROFILE" \
   --versioning-configuration Status=Enabled
 
+echo "Creating Vault and Jenkins Server"
+cd vault-jenkins
+terraform init 
+terraform validate
+terraform apply -auto-approve

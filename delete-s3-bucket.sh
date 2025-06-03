@@ -1,5 +1,11 @@
 #!/bin/bash
 
+echo "deleting jenkins and vault server"
+cd vault-jenkins
+terraform destroy -auto-approve
+
+echo "creating S3 bucket"
+
 # Using the same variables as ones used for creation
 BUCKET_NAME="pet-adoption-state-bucket-1"
 AWS_REGION="eu-west-1"
