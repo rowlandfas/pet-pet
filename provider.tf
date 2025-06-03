@@ -1,6 +1,5 @@
 provider "aws" {
-  region  = "eu-west-1"
-  profile = ""
+  region  = "eu-west-1"  
 }
 
 terraform {
@@ -11,4 +10,9 @@ terraform {
     region       = "eu-west-1"
     encrypt      = true
   }
+}
+
+provider "vault" {
+  address = "https://vault.set30.space"
+  token = ""
 }
