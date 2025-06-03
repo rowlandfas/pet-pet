@@ -24,3 +24,7 @@ output "public_key" {
 output "private_key" {
   value = tls_private_key.key.private_key_pem
 }
+
+output "vpc_cidr_block" {
+  value = aws_vpc.vpc.cidr_block
+}
