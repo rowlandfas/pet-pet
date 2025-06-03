@@ -4,7 +4,7 @@ locals {
 resource "aws_vpc" "vpc" {
   cidr_block       = "10.0.0.0/16"
   instance_tenancy = "default"
-tags = {
+  tags = {
     Name = "${local.name}-vpc"
   }
 }
@@ -74,6 +74,32 @@ data "aws_ami" "redhat" {
   }
 }
 
+# resource "aws_instance" "jenkins-server" {
+#   ami                         = data.aws_ami.redhat.id # redhat in eu-west-1
+#   instance_type               = "t3.medium"
+#   key_name                    = aws_key_pair.public_key.id
+#   associate_public_ip_address = true
+#   vpc_security_group_ids      = [aws_security_group.jenkins_sg.id]
+#   iam_instance_profile        = aws_iam_instance_profile.ssm_instance_profile.name
+#   root_block_device {
+#     volume_size = 20    # Size in GB
+#     volume_type = "gp3" # General Purpose SSD (recommended)
+#     encrypted   = true  # Enable encryption (best practice)
+#   }
+# user_data = templatefile("./jenkins_userdata.sh", {
+
+#     region    = var.region
+#   })
+#   metadata_options {
+#     http_tokens = "required"
+
+#   }
+
+#   tags = {
+#     Name = "${local.name}-jenkins-server"
+#   }
+# }
+
 # Create IAM role for Jenkins server to assume  SSM role
 resource "aws_iam_role" "ssm-jenkins-role" {
   name = "${local.name}-ssm-jenkins-role"
@@ -112,7 +138,7 @@ resource "aws_iam_instance_profile" "ssm_instance_profile" {
 resource "aws_security_group" "jenkins_sg" {
   name        = "${local.name}-jenkins-sg"
   description = "Allow SSH and HTTPS"
-  vpc_id      = aws_vpc.vpc.id 
+  vpc_id      = aws_vpc.vpc.id
   ingress {
     from_port   = 8080
     to_port     = 8080
@@ -125,7 +151,7 @@ resource "aws_security_group" "jenkins_sg" {
     protocol    = "-1"
     cidr_blocks = ["0.0.0.0/0"]
   }
-    tags = {
+  tags = {
     Name = "${local.name}-jenkins-sg"
   }
 }
@@ -136,16 +162,16 @@ resource "aws_instance" "jenkins-server" {
   associate_public_ip_address = true
   subnet_id                   = aws_subnet.pub_sub.id
 
-  vpc_security_group_ids      = [aws_security_group.jenkins_sg.id]
-  iam_instance_profile        = aws_iam_instance_profile.ssm_instance_profile.name
+  vpc_security_group_ids = [aws_security_group.jenkins_sg.id]
+  iam_instance_profile   = aws_iam_instance_profile.ssm_instance_profile.name
   root_block_device {
     volume_size = 20    # Size in GB
     volume_type = "gp3" # General Purpose SSD (recommended)
     encrypted   = true  # Enable encryption (best practice)
   }
-user_data = templatefile("./jenkins_userdata.sh", {
-   
-    region    = var.region
+  user_data = templatefile("./jenkins_userdata.sh", {
+
+    region = var.region
   })
   metadata_options {
     http_tokens = "required"
@@ -207,7 +233,7 @@ resource "aws_acm_certificate_validation" "team1_cert_validation" {
 resource "aws_security_group" "jenkins-elb-sg" {
   name        = "${local.name}-jenkins-elb-sg"
   description = "Allow HTTPS"
-  vpc_id      = aws_vpc.vpc.id 
+  vpc_id      = aws_vpc.vpc.id
   ingress {
     from_port   = 443
     to_port     = 443
@@ -220,17 +246,17 @@ resource "aws_security_group" "jenkins-elb-sg" {
     protocol    = "-1"
     cidr_blocks = ["0.0.0.0/0"]
   }
-    tags = {
+  tags = {
     Name = "${local.name}-jenkins-elb-sg"
   }
 }
 
 # Create elastic Load Balancer for Jenkins
 resource "aws_elb" "elb_jenkins" {
-  name               = "elb-jenkins"
-  security_groups    = [aws_security_group.jenkins-elb-sg.id]
-  subnets            = [aws_subnet.pub_sub.id]
-  
+  name            = "elb-jenkins"
+  security_groups = [aws_security_group.jenkins-elb-sg.id]
+  subnets         = [aws_subnet.pub_sub.id]
+
   listener {
     instance_port      = 8080
     instance_protocol  = "HTTP"
@@ -255,10 +281,110 @@ resource "aws_elb" "elb_jenkins" {
   }
 }
 
-# Create Route 53 record for jenkins server
-resource "aws_route53_record" "jenkins-record" {
+# Data source to get the latest Ubuntu AMI
+data "aws_ami" "ubuntu-vmi" {
+  most_recent = true
+  owners      = ["099720109477"] # Canonical's official AWS Account ID
+
+  filter {
+    name   = "name"
+    values = ["ubuntu/images/hvm-ssd/ubuntu-jammy-22.04-amd64-server-*"]
+  }
+
+  filter {
+    name   = "virtualization-type"
+    values = ["hvm"]
+  }
+
+  filter {
+    name   = "architecture"
+    values = ["x86_64"]
+  }
+}
+
+
+resource "aws_instance" "vault-server" {
+  ami                         = data.aws_ami.ubuntu-vmi.id
+  instance_type               = "t2.medium"
+  key_name                    = aws_key_pair.public_key.key_name
+  vpc_security_group_ids      = [aws_security_group.sg.id]
+  associate_public_ip_address = true
+  subnet_id                   = aws_subnet.pub_sub.id
+  user_data = templatefile("./vault.sh", {
+    domain  = "var.region"
+    region  = "eu-west-1"
+    kms_key = aws_kms_key.kms-vault.id
+  })
+
+  tags = {
+    Name = "${local.name}-vault"
+  }
+}
+
+# create security group
+resource "aws_security_group" "sg" {
+  name        = "${local.name}-vault-sg"
+  description = "Allow TLS inbound traffic"
+  vpc_id      = aws_vpc.vpc.id
+
+
+
+  # ingres rules
+  ingress {
+    description = "HTTPS"
+    from_port   = 8200
+    to_port     = 8200
+    protocol    = "tcp"
+    cidr_blocks = ["0.0.0.0/0"]
+  }
+
+
+  egress {
+    from_port   = 0
+    to_port     = 0
+    protocol    = "-1"
+    cidr_blocks = ["0.0.0.0/0"]
+  }
+
+
+  tags = {
+    Name = "vault-sg"
+  }
+}
+
+# Create elastic Load Balancer for Jenkins
+resource "aws_elb" "vault_elb" {
+  name            = "elb-vault"
+  security_groups = [aws_security_group.jenkins-elb-sg.id]
+  subnets         = [aws_subnet.pub_sub.id]
+  listener {
+    instance_port      = 8080
+    instance_protocol  = "HTTP"
+    lb_port            = 443
+    lb_protocol        = "HTTPS"
+    ssl_certificate_id = aws_acm_certificate.team1-acm-cert.id
+  }
+  health_check {
+    healthy_threshold   = 3
+    unhealthy_threshold = 2
+    interval            = 30
+    timeout             = 5
+    target              = "TCP:8080"
+  }
+  instances                   = [aws_instance.vault-server.id]
+  cross_zone_load_balancing   = true
+  idle_timeout                = 400
+  connection_draining         = true
+  connection_draining_timeout = 400
+  tags = {
+    Name = "${local.name}-vault-server"
+  }
+}
+
+# Create Route 53 record for vault server
+resource "aws_route53_record" "vault-record" {
   zone_id = data.aws_route53_zone.team1-acp-zone.zone_id
-  name    = "jenkins.${var.domain}"
+  name    = "vault.${var.domain}"
   type    = "A"
   alias {
     name                   = aws_elb.elb_jenkins.dns_name
