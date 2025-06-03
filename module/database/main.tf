@@ -10,7 +10,7 @@ resource "aws_db_subnet_group" "team1_db_subnet_group" {
   }
 }
 #data "vault_generic_secret" "vault-secret" {
- # path = "secret/database"
+# path = "secret/database"
 #}
 
 

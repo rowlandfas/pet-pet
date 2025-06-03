@@ -4,7 +4,7 @@ locals {
 resource "aws_vpc" "vpc" {
   cidr_block       = "10.0.0.0/16"
   instance_tenancy = "default"
-tags = {
+  tags = {
     Name = "${local.name}-vpc"
   }
 }
@@ -112,7 +112,7 @@ resource "aws_iam_instance_profile" "ssm_instance_profile" {
 resource "aws_security_group" "jenkins_sg" {
   name        = "${local.name}-jenkins-sg"
   description = "Allow SSH and HTTPS"
-  vpc_id      = aws_vpc.vpc.id 
+  vpc_id      = aws_vpc.vpc.id
   ingress {
     from_port   = 8080
     to_port     = 8080
@@ -125,7 +125,7 @@ resource "aws_security_group" "jenkins_sg" {
     protocol    = "-1"
     cidr_blocks = ["0.0.0.0/0"]
   }
-    tags = {
+  tags = {
     Name = "${local.name}-jenkins-sg"
   }
 }
@@ -136,16 +136,16 @@ resource "aws_instance" "jenkins-server" {
   associate_public_ip_address = true
   subnet_id                   = aws_subnet.pub_sub.id
 
-  vpc_security_group_ids      = [aws_security_group.jenkins_sg.id]
-  iam_instance_profile        = aws_iam_instance_profile.ssm_instance_profile.name
+  vpc_security_group_ids = [aws_security_group.jenkins_sg.id]
+  iam_instance_profile   = aws_iam_instance_profile.ssm_instance_profile.name
   root_block_device {
     volume_size = 20    # Size in GB
     volume_type = "gp3" # General Purpose SSD (recommended)
     encrypted   = true  # Enable encryption (best practice)
   }
-user_data = templatefile("./jenkins_userdata.sh", {
-   
-    region    = var.region
+  user_data = templatefile("./jenkins_userdata.sh", {
+
+    region = var.region
   })
   metadata_options {
     http_tokens = "required"
@@ -207,7 +207,7 @@ resource "aws_acm_certificate_validation" "team1_cert_validation" {
 resource "aws_security_group" "jenkins-elb-sg" {
   name        = "${local.name}-jenkins-elb-sg"
   description = "Allow HTTPS"
-  vpc_id      = aws_vpc.vpc.id 
+  vpc_id      = aws_vpc.vpc.id
   ingress {
     from_port   = 443
     to_port     = 443
@@ -220,17 +220,17 @@ resource "aws_security_group" "jenkins-elb-sg" {
     protocol    = "-1"
     cidr_blocks = ["0.0.0.0/0"]
   }
-    tags = {
+  tags = {
     Name = "${local.name}-jenkins-elb-sg"
   }
 }
 
 # Create elastic Load Balancer for Jenkins
 resource "aws_elb" "elb_jenkins" {
-  name               = "elb-jenkins"
-  security_groups    = [aws_security_group.jenkins-elb-sg.id]
-  subnets            = [aws_subnet.pub_sub.id]
-  
+  name            = "elb-jenkins"
+  security_groups = [aws_security_group.jenkins-elb-sg.id]
+  subnets         = [aws_subnet.pub_sub.id]
+
   listener {
     instance_port      = 8080
     instance_protocol  = "HTTP"
