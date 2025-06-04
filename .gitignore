@@ -38,7 +38,7 @@ terraform.rc
 feature/chijioke
 *.terraform.
 .terraform.*
-
+vault-jenkins-team1-key.pem
 # Environment variable files
 .env
 *.env
