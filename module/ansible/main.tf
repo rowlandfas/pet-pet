@@ -26,7 +26,7 @@ resource "aws_security_group" "ansible-sg" {
     from_port       = 22
     to_port         = 22
     protocol        = "tcp"
-    security_groups = [var.bastion]
+    security_groups = [var.bastion_key]
   }
 
   egress {

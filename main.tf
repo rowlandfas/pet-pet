@@ -38,7 +38,7 @@ module "ansible" {
   keypair     = module.vpc.public_key
   subnet_id   = module.vpc.pri_sub1_id
   vpc         = module.vpc.vpc_id
-  bastion     = module.bastion.bastion_public_ip
+  bastion_key     = module.bastion.bastion-sg
   private-key = module.vpc.private_key
   nexus-ip    = module.nexus.nexus_ip
   nr-key      = var.nr-key

@@ -170,7 +170,7 @@ resource "aws_instance" "Nexus-server" {
   key_name                    = var.keypair
   subnet_id                   = var.subnet_id
   user_data                   = file("${path.module}/nexus_userdata.sh")
-  iam_instance_profile        = aws_iam_instance_profile.nexus_profile.role
+  iam_instance_profile        = aws_iam_instance_profile.nexus_profile.name
   associate_public_ip_address = true
 
   tags = {

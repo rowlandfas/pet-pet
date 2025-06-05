@@ -30,7 +30,7 @@ resource "aws_security_group" "sonarqube-sg" {
 
 # Creating security group for LoadBalancer
 resource "aws_security_group" "lb-sg" {
-  name        = "${var.name}-lb-sg"
+  name        = "${var.name}-sonarqube-lb-sg"
   description = "Allow inbound traffic for lb and all outbound traffic"
   vpc_id      = var.vpc
 
@@ -52,7 +52,7 @@ resource "aws_security_group" "lb-sg" {
   }
 
   tags = {
-    Name = "${var.name}-lb-sg"
+    Name = "${var.name}-sonarqube-lb-sg"
   }
 }
 # Data source to get the latest Ubuntu AMI
