@@ -82,3 +82,16 @@ resource "aws_iam_group_policy_attachment" "ansible-policy" {
   policy_arn = "arn:aws:iam::aws:policy/AmazonEC2FullAccess"
   group      = aws_iam_group.ansible-group.name
 }
+
+resource "null_resource" "ansible-setup" {
+  provisioner "local-exec" {
+    command = <<EOT
+      aws s3 cp --recursive ${path.module}/script/ s3://pet-adoption-state-bucket-1/ansible-script/ 
+    EOT
+  }
+   depends_on 
+}
+resource "time_sleep" "wait_for_ansible" {
+  create_duration = "30s"
+  depends_on = [aws_instance.ansible-server]
+}
