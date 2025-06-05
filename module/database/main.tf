@@ -9,9 +9,9 @@ resource "aws_db_subnet_group" "team1_db_subnet_group" {
     Name = "${var.name}-db-Subnet-Group"
   }
 }
-#data "vault_generic_secret" "vault-secret" {
-# path = "secret/database"
-#}
+data "vault_generic_secret" "vault-secret" {
+ path = "secret/database"
+}
 
 
 resource "aws_db_instance" "team1_mysql_database" {
@@ -55,6 +55,7 @@ resource "aws_security_group" "RDS-sg" {
     security_groups = [var.bastion-sg]
   }
   egress {
+    description = "Allow all outbound traffic"
     from_port   = 0
     to_port     = 0
     protocol    = "-1"
