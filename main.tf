@@ -100,5 +100,18 @@ module "stage-env" {
   nexus-ip     = ""
   nr-key       = var.nr-key
   nr-acct-id   = var.nr-acc-id
+  ansible =  module.ansible.ansible_sg
+}
+
+module "nexus" {
+  source         = "./module/nexus"
+  name           = local.name
+  vpc            = module.vpc.vpc_id
+  keypair        = module.vpc.public_key
+  subnet_id      = module.vpc.pub_sub1_id
+  subnets        = module.vpc.pub_sub1_id
+  certificate    = data.aws_acm_certificate.cert.arn
+  hosted_zone_id = data.aws_route53_zone.zone.id
+  domain_name    = var.domain_name
   ansible      = module.ansible.ansible_sg
 }
