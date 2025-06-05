@@ -1,5 +1,6 @@
 provider "aws" {
-  region  = "eu-west-1"  
+  region  = "eu-west-1"
+  profile = "pet-adoption"
 }
 
 terraform {
@@ -9,10 +10,11 @@ terraform {
     key          = "infrastructure/terraform.tfstate"
     region       = "eu-west-1"
     encrypt      = true
+    profile      = "pet-adoption"
   }
 }
 
 provider "vault" {
   address = "https://vault.set30.space"
-  token = "hvs.3dg3XN6aX7aLCO9RQt5RdTdf"
+  token   = "hvs.Xjk6JrbQJSGWtSs5cKiD2fYO"
 }
