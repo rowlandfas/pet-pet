@@ -43,7 +43,7 @@ resource "aws_security_group" "ansible-sg" {
 # Create Ansible Server
 resource "aws_instance" "ansible-server" {
   ami                    = data.aws_ami.redhat.id #rehat 
-  instance_type          = "t2.medium"
+  instance_type          = "t2.micro"
   vpc_security_group_ids = [aws_security_group.ansible-sg.id]
   key_name               = var.keypair
   subnet_id              = var.subnet_id
@@ -53,12 +53,15 @@ resource "aws_instance" "ansible-server" {
     volume_type = "gp3"
     encrypted   = true
   }
+  metadata_options {
+    http_tokens = "required"
+  }
   tags = {
     Name = "${var.name}-ansible-server"
   }
 }
 
-# Create IAM role for SSM
+# Create IAM role for ansible
 resource "aws_iam_role" "ansible-role" {
   name = "ansible-discovery-role"
   assume_role_policy = jsonencode({
@@ -87,10 +90,5 @@ resource "null_resource" "ansible-setup" {
     command = <<EOT
       aws s3 cp --recursive ${path.module}/script/ s3://pet-adoption-state-bucket-1/ansible-script/ 
     EOT
-  }
-   depends_on = [time_sleep.wait_for_ansible]
-}
-resource "time_sleep" "wait_for_ansible" {
-  create_duration = "15s"
-  depends_on = [aws_instance.ansible-server]
+  } 
 }

@@ -16,7 +16,7 @@ resource "aws_security_group" "stage-sg" {
     from_port   = 8080
     to_port     = 8080
     protocol    = "tcp"
-    cidr_blocks = ["0.0.0.0/0"]
+    security_groups = [aws_security_group.stage-elb-sg.id]
   }
   egress {
     description = "Allow all outbound traffic"
@@ -60,7 +60,9 @@ resource "aws_launch_template" "stage_lnch_tmpl" {
   network_interfaces {
     security_groups = [aws_security_group.stage-sg.id]
   }
-  #user_data = ""
+  metadata_options {
+    http_tokens = "required"
+  }
 }
 
 # Create Auto Scaling Group

@@ -16,7 +16,7 @@ resource "aws_security_group" "prod-sg" {
     from_port   = 8080
     to_port     = 8080
     protocol    = "tcp"
-    cidr_blocks = ["0.0.0.0/0"]
+    security_groups = [aws_security_group.prod-elb-sg.id]
   }
   egress {
     description = "Allow all outbound traffic"
@@ -60,7 +60,9 @@ resource "aws_launch_template" "prod_lnch_tmpl" {
   network_interfaces {
     security_groups = [aws_security_group.prod-sg.id]
   }
-  #user_data = ""
+  metadata_options {
+    http_tokens = "required"
+  }
 }
 
 # Create Auto Scaling Group
@@ -184,7 +186,7 @@ data "aws_route53_zone" "team2-acp-zone" {
 # Create Route 53 record for prod server
 resource "aws_route53_record" "prod-record" {
   zone_id = data.aws_route53_zone.team2-acp-zone.zone_id
-  name    = "www.${var.domain}"
+  name    = "prod.${var.domain}"
   type    = "A"
   alias {
     name                   = aws_lb.prod_LB.dns_name

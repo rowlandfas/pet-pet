@@ -3,14 +3,12 @@ resource "aws_security_group" "bastion-sg" {
   name        = "${var.name}-baston-sg"
   description = "Allow only outbound traffic"
   vpc_id      = var.vpc
-
   egress {
     from_port   = 0
     to_port     = 0
     protocol    = "-1"
     cidr_blocks = ["0.0.0.0/0"]
   }
-
   tags = {
     Name = "${var.name}-baston-sg"
   }
@@ -19,8 +17,6 @@ resource "aws_security_group" "bastion-sg" {
 # Create IAM role for SSM
 resource "aws_iam_role" "ssm-role" {
   name = "bastion-ssm-role"
-
-
   assume_role_policy = jsonencode({
     Version = "2012-10-17",
     Statement = [{
