@@ -2,6 +2,7 @@
 
 echo "deleting jenkins and vault server"
 cd vault-jenkins
+terraform init 
 terraform destroy -auto-approve
 
 echo "creating S3 bucket"
