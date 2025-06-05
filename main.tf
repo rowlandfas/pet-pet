@@ -40,9 +40,6 @@ module "ansible" {
   vpc              = module.vpc.vpc_id
   bastion          = module.bastion.bastion_public_ip
   private-key      = module.vpc.private_key
-  deployment       = ""
-  prod-bashscript  = "./module/ansible/prod-bashscript.sh"  # Path to the prod bash script
-  stage-bashscript = "./module/ansible/stage-bashscript.sh" # Path to the stage bash script
   nexus-ip         = ""
   nr-key           = var.nr-key
   nr-acc-id        = var.nr-acc-id

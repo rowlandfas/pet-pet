@@ -58,40 +58,39 @@ resource "aws_instance" "ansible-server" {
   }
 }
 
-
-
-# IAM User
-resource "aws_iam_user" "ansible-user" {
-  name = "${var.name}-ansible-user"
+# Create IAM role for SSM
+resource "aws_iam_role" "ansible-role" {
+  name = "ansible-discovery-role"
+  assume_role_policy = jsonencode({
+    Version = "2012-10-17",
+    Statement = [{
+      Effect = "Allow",
+      Principal = {
+        Service = "ec2.amazonaws.com"
+      },
+      Action = "sts:AssumeRole"
+    }]
+  })
 }
-
-resource "aws_iam_group" "ansible-group" {
-  name = "${var.name}-ansible-group"
-}
-
-resource "aws_iam_access_key" "ansible-user-key" {
-  user = aws_iam_user.ansible-user.name
-}
-
-resource "aws_iam_user_group_membership" "ansible-group-member" {
-  user   = aws_iam_user.ansible-user.name
-  groups = [aws_iam_group.ansible-group.name]
-}
-
-resource "aws_iam_group_policy_attachment" "ansible-policy" {
+# Attach the EC2 full access policy to the role
+resource "aws_iam_role_policy_attachment" "ec2-policy" {
+  role       = aws_iam_role.ansible-role.name
   policy_arn = "arn:aws:iam::aws:policy/AmazonEC2FullAccess"
-  group      = aws_iam_group.ansible-group.name
 }
-
+# Attach S3 full access policy to the role
+resource "aws_iam_role_policy_attachment" "s3-policy" {
+  role       = aws_iam_role.ansible-role.name
+  policy_arn = "arn:aws:iam::aws:policy/AmazonS3FullAccess"
+}
 resource "null_resource" "ansible-setup" {
   provisioner "local-exec" {
     command = <<EOT
       aws s3 cp --recursive ${path.module}/script/ s3://pet-adoption-state-bucket-1/ansible-script/ 
     EOT
   }
-   depends_on 
+   depends_on = [time_sleep.wait_for_ansible]
 }
 resource "time_sleep" "wait_for_ansible" {
-  create_duration = "30s"
+  create_duration = "15s"
   depends_on = [aws_instance.ansible-server]
 }
