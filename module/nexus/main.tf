@@ -19,7 +19,7 @@ resource "aws_security_group" "Nexus-sg" {
     from_port       = 8085
     to_port         = 8085
     protocol        = "tcp"
-    security_groups = [aws_security_group.lb-sg.id]
+    cidr_blocks = ["10.0.0.0/16"]
   }
 
   # Egress rule: Allow all outbound traffic
@@ -50,7 +50,7 @@ resource "aws_security_group" "lb-sg" {
     protocol    = "tcp"
     cidr_blocks = ["0.0.0.0/0"] # Allow from the VPC CIDR block
   }
-  
+
   # Egress rule: Allow all outbound traffic
   egress {
     from_port   = 0
@@ -63,8 +63,6 @@ resource "aws_security_group" "lb-sg" {
     Name = "${var.name}-lb-sg"
   }
 }
-
-
 # create loadbalancer for the nexus
 resource "aws_elb" "elb_nexus" {
   name            = "${var.name}-nexus-elb"
@@ -72,7 +70,7 @@ resource "aws_elb" "elb_nexus" {
   subnets         = [var.subnets]
 
   listener {
-    instance_port      = 9000
+    instance_port      = 8081
     instance_protocol  = "HTTP"
     lb_port            = 443
     lb_protocol        = "HTTPS"
@@ -83,7 +81,7 @@ resource "aws_elb" "elb_nexus" {
     unhealthy_threshold = 2
     interval            = 30
     timeout             = 5
-    target              = "TCP:9000"
+    target              = "TCP:8081"
   }
   instances                   = [aws_instance.Nexus-server.id]
   cross_zone_load_balancing   = true
@@ -102,13 +100,11 @@ resource "aws_route53_record" "nexus" {
   type    = "A"
 
   alias {
-    name                   = aws_elb.elb_nexus.name
+    name                   = aws_elb.elb_nexus.dns_name
     zone_id                = aws_elb.elb_nexus.zone_id
     evaluate_target_health = true
   }
-
 }
-
 # create an IAM instance role
 resource "aws_iam_role" "nexus-role" {
   name = "${var.name}-nexus-role"
@@ -174,7 +170,7 @@ resource "aws_instance" "Nexus-server" {
   key_name                    = var.keypair
   subnet_id                   = var.subnet_id
   user_data                   = file("${path.module}/nexus_userdata.sh")
-  iam_instance_profile        = aws_iam_instance_profile.nexus_profile.role
+  iam_instance_profile        = aws_iam_instance_profile.nexus_profile.name
   associate_public_ip_address = true
 
   tags = {

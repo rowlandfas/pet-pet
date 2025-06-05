@@ -33,19 +33,16 @@ module "bastion" {
 }
 
 module "ansible" {
-  source           = "./module/ansible"
-  name             = local.name
-  keypair          = module.vpc.public_key
-  subnet_id        = module.vpc.pri_sub1_id
-  vpc              = module.vpc.vpc_id
-  bastion          = module.bastion.bastion_public_ip
-  private-key      = module.vpc.private_key
-  deployment       = ""
-  prod-bashscript  = "./module/ansible/prod-bashscript.sh"  # Path to the prod bash script
-  stage-bashscript = "./module/ansible/stage-bashscript.sh" # Path to the stage bash script
-  nexus-ip         = ""
-  nr-key           = var.nr-key
-  nr-acc-id        = var.nr-acc-id
+  source      = "./module/ansible"
+  name        = local.name
+  keypair     = module.vpc.public_key
+  subnet_id   = module.vpc.pri_sub1_id
+  vpc         = module.vpc.vpc_id
+  bastion_key     = module.bastion.bastion-sg
+  private-key = module.vpc.private_key
+  nexus-ip    = module.nexus.nexus_ip
+  nr-key      = var.nr-key
+  nr-acc-id   = var.nr-acc-id
 }
 module "database" {
   source     = "./module/database"
@@ -83,7 +80,7 @@ module "prod-env" {
   pub-subnet2  = module.vpc.pub_sub2_id
   acm-cert-arn = data.aws_acm_certificate.cert.arn
   domain       = var.domain_name
-  nexus-ip     = ""
+  nexus-ip     = module.nexus.nexus_ip
   nr-key       = var.nr-key
   nr-acct-id   = var.nr-acc-id
   ansible      = module.ansible.ansible_sg
@@ -100,10 +97,10 @@ module "stage-env" {
   pub-subnet2  = module.vpc.pub_sub2_id
   acm-cert-arn = data.aws_acm_certificate.cert.arn
   domain       = var.domain_name
-  nexus-ip     = ""
+  nexus-ip     = module.nexus.nexus_ip
   nr-key       = var.nr-key
   nr-acct-id   = var.nr-acc-id
-  ansible =  module.ansible.ansible_sg
+  ansible      = module.ansible.ansible_sg
 }
 
 module "nexus" {
@@ -116,5 +113,4 @@ module "nexus" {
   certificate    = data.aws_acm_certificate.cert.arn
   hosted_zone_id = data.aws_route53_zone.zone.id
   domain_name    = var.domain_name
-  ansible      = module.ansible.ansible_sg
 }

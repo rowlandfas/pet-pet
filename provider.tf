@@ -1,6 +1,6 @@
 provider "aws" {
   region  = "eu-west-1"
-  profile = "pet-adoption"
+  # profile = "pet-adoption"
 }
 
 terraform {
@@ -10,7 +10,7 @@ terraform {
     key          = "infrastructure/terraform.tfstate"
     region       = "eu-west-1"
     encrypt      = true
-    profile      = "pet-adoption"
+    # profile      = "pet-adoption"
   }
 }
 
