@@ -71,19 +71,37 @@ module "sonarqube" {
   domain_name    = var.domain_name
 }
 
-module "stage-env" {
-  source     = "./module/stage-env"
-  name       = local.name
-  vpc        = module.vpc.vpc_id
-  pri-sub-1  = module.vpc.pri_sub1_id
-  pri-sub-2  = module.vpc.pri_sub2_id
-  bastion-sg = module.bastion.bastion-sg
-}
 module "prod-env" {
-  source     = "./module/prod-env"
-  name       = local.name
-  vpc        = module.vpc.vpc_id
-  pri-sub-1  = module.vpc.pri_sub1_id
-  pri-sub-2  = module.vpc.pri_sub2_id
-  bastion-sg = module.bastion.bastion-sg
+  source       = "./module/prod-env"
+  name         = local.name
+  vpc-id       = module.vpc.vpc_id
+  bastion      = module.bastion.bastion-sg
+  key-name     = module.vpc.public_key
+  pri-subnet1  = module.vpc.pri_sub1_id
+  pri-subnet2  = module.vpc.pri_sub2_id
+  pub-subnet1  = module.vpc.pub_sub1_id
+  pub-subnet2  = module.vpc.pub_sub2_id
+  acm-cert-arn = data.aws_acm_certificate.cert.arn
+  domain       = var.domain_name
+  nexus-ip     = ""
+  nr-key       = var.nr-key
+  nr-acct-id   = var.nr-acc-id
+  ansible =  module.ansible.ansible_sg
+}
+module "stage-env" {
+  source       = "./module/stage-env"
+  name         = local.name
+  vpc-id       = module.vpc.vpc_id
+  bastion      = module.bastion.bastion-sg
+  key-name     = module.vpc.public_key
+  pri-subnet1  = module.vpc.pri_sub1_id
+  pri-subnet2  = module.vpc.pri_sub2_id
+  pub-subnet1  = module.vpc.pub_sub1_id
+  pub-subnet2  = module.vpc.pub_sub2_id
+  acm-cert-arn = data.aws_acm_certificat.cert.arn
+  domain       = var.domain_name
+  nexus-ip     = ""
+  nr-key       = var.nr-key
+  nr-acct-id   = var.nr-acc-id
+  ansible =  module.ansible.ansible_sg
 }
