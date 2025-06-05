@@ -298,9 +298,9 @@ data "aws_ami" "ubuntu" {
 resource "aws_instance" "vault" {
   ami                         = data.aws_ami.ubuntu.id           # AMI ID passed as a variable (e.g., ubuntu)
   instance_type               = "t2.medium"                      # Instance type (e.g., t3.medium)
-  subnet_id                   = aws_subnet.pub_sub.id  # Use first available subnet
+  subnet_id                   = aws_subnet.pub_sub.id            # Use first available subnet
   vpc_security_group_ids      = [aws_security_group.vault_sg.id] # Attach security group
-  key_name                    = aws_key_pair.public_key.key_name       # Use the created key pair
+  key_name                    = aws_key_pair.public_key.key_name # Use the created key pair
   associate_public_ip_address = true                             # Required for SSH and browser access
   iam_instance_profile        = aws_iam_instance_profile.vault_ssm_profile.name
   root_block_device {
@@ -310,9 +310,9 @@ resource "aws_instance" "vault" {
   }
   # User data script to install Jenkins and required tools
   user_data = templatefile("./vault.sh", {
-    region = var.region,
+    region        = var.region,
     VAULT_VERSION = "1.18.3",
-    key = aws_kms_key.vault.id
+    key           = aws_kms_key.vault.id
   })
   metadata_options {
     http_tokens = "required"
