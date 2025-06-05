@@ -38,14 +38,14 @@ module "ansible" {
   keypair          = module.vpc.public_key
   subnet_id        = module.vpc.pri_sub1_id
   vpc              = module.vpc.vpc_id
-  bastion          = ""
+  bastion          = module.bastion.bastion_public_ip
   private-key      = module.vpc.private_key
   deployment       = ""
   prod-bashscript  = "./module/ansible/prod-bashscript.sh"  # Path to the prod bash script
   stage-bashscript = "./module/ansible/stage-bashscript.sh" # Path to the stage bash script
   nexus-ip         = ""
-  nr-key           = ""
-  nr-acc-id        = ""
+  nr-key           = var.nr-key
+  nr-acc-id        = var.nr-acc-id
 }
 module "database" {
   source     = "./module/database"
@@ -69,4 +69,21 @@ module "sonarqube" {
   certificate    = data.aws_acm_certificate.cert.arn
   hosted_zone_id = data.aws_route53_zone.zone.id
   domain_name    = var.domain_name
+}
+
+module "stage-env" {
+  source     = "./module/stage-env"
+  name       = local.name
+  vpc        = module.vpc.vpc_id
+  pri-sub-1  = module.vpc.pri_sub1_id
+  pri-sub-2  = module.vpc.pri_sub2_id
+  bastion-sg = module.bastion.bastion-sg
+}
+module "prod-env" {
+  source     = "./module/prod-env"
+  name       = local.name
+  vpc        = module.vpc.vpc_id
+  pri-sub-1  = module.vpc.pri_sub1_id
+  pri-sub-2  = module.vpc.pri_sub2_id
+  bastion-sg = module.bastion.bastion-sg
 }
