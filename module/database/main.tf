@@ -18,7 +18,7 @@ resource "aws_db_instance" "team1_mysql_database" {
   identifier             = "${var.name}-db"
   db_subnet_group_name   = aws_db_subnet_group.team1_db_subnet_group.name
   vpc_security_group_ids = [aws_security_group.RDS-sg.id]
-  db_name                = "pet-adoption"
+  db_name                = "petclinic"
   # High Availability
   multi_az = false
 

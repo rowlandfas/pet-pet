@@ -100,7 +100,7 @@ resource "aws_route53_record" "nexus" {
   type    = "A"
 
   alias {
-    name                   = aws_elb.elb_nexus.name
+    name                   = aws_elb.elb_nexus.dns_name
     zone_id                = aws_elb.elb_nexus.zone_id
     evaluate_target_health = true
   }
