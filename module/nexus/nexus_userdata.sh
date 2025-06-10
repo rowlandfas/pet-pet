@@ -17,6 +17,11 @@ sudo dnf update -y
 echo "Installing Java..."
 sudo dnf install java-21-openjdk java-21-openjdk-devel wget -y
 
+# install amazon-ssm-agent
+sudo dnf install -y https://s3."${region}".amazonaws.com/amazon-ssm-"${region}"/latest/linux_amd64/amazon-ssm-agent.rpm
+curl "https://s3.amazonaws.com/session-manager-downloads/plugin/latest/linux_64bit/session-manager-plugin.rpm" -o "session-manager-plugin.rpm"
+sudo yum install -y session-manager-plugin.rpm
+
 
 # 2. Add nexus user
 echo "Adding nexus user..."

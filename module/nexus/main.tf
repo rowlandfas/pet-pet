@@ -169,9 +169,12 @@ resource "aws_instance" "Nexus-server" {
   vpc_security_group_ids      = [aws_security_group.Nexus-sg.id]
   key_name                    = var.keypair
   subnet_id                   = var.subnet_id
-  user_data                   = file("${path.module}/nexus_userdata.sh")
+  user_data                   = templatefile("${path.module}/nexus_userdata.sh",{
+    region = var.region
+  })
   iam_instance_profile        = aws_iam_instance_profile.nexus_profile.name
   associate_public_ip_address = true
+
 
   tags = {
     Name = "${var.name}-nexus-server"
