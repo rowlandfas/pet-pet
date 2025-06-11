@@ -16,5 +16,5 @@ terraform {
 
 provider "vault" {
   address = "https://vault.set30.space"
-  token   = "hvs.Ml9bSixTf6RXj68efpeJub6D" 
+  token   = "hvs.CgX5iigV5TJCV7xQOPcL2T30" 
 }
