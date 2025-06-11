@@ -44,6 +44,7 @@ resource "aws_security_group" "ansible-sg" {
 resource "aws_instance" "ansible-server" {
   ami                    = data.aws_ami.redhat.id #rehat 
   instance_type          = "t2.micro"
+  iam_instance_profile   = aws_iam_instance_profile.ansible-profile.name
   vpc_security_group_ids = [aws_security_group.ansible-sg.id]
   key_name               = var.keypair
   subnet_id              = var.subnet_id
@@ -84,6 +85,11 @@ resource "aws_iam_role_policy_attachment" "ec2-policy" {
 resource "aws_iam_role_policy_attachment" "s3-policy" {
   role       = aws_iam_role.ansible-role.name
   policy_arn = "arn:aws:iam::aws:policy/AmazonS3FullAccess"
+}
+# Create IAM instance profile for ansible
+resource "aws_iam_instance_profile" "ansible-profile" {
+  name = "ansible-discovery-profile"
+  role = aws_iam_role.ansible-role.name
 }
 resource "null_resource" "ansible-setup" {
   provisioner "local-exec" {

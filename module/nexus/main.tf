@@ -19,7 +19,7 @@ resource "aws_security_group" "Nexus-sg" {
     from_port       = 8085
     to_port         = 8085
     protocol        = "tcp"
-    cidr_blocks = ["10.0.0.0/16"]
+    cidr_blocks = ["0.0.0.0/0"]
   }
 
   # Egress rule: Allow all outbound traffic
@@ -177,4 +177,20 @@ resource "aws_instance" "Nexus-server" {
   tags = {
     Name = "${var.name}-nexus-server"
   }
+}
+resource "null_resource" "update_jenkins" {
+  depends_on = [aws_instance.Nexus-server]
+
+  provisioner "local-exec" {
+    command = <<-EOF
+#!/bin/bash
+sudo cat <<EOT>> /etc/docker/daemon.json
+  {
+    "insecure-registries" : ["${aws_instance.Nexus-server.public_ip}:8085"]
+  }
+EOT
+sudo systemctl restart docker
+EOF
+  interpreter = [ "bash", "-c" ]
+  } 
 }
