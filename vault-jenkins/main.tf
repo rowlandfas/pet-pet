@@ -12,7 +12,7 @@ resource "aws_vpc" "vpc" {
 resource "aws_subnet" "pub_sub" {
   vpc_id            = aws_vpc.vpc.id
   cidr_block        = "10.0.1.0/24"
-  availability_zone = "eu-west-1a"
+  availability_zone = "eu-west-3a"
 
   tags = {
     Name = "${local.name}-pub_sub"
