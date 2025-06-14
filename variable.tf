@@ -6,5 +6,5 @@ variable "nr-acc-id" {
 }
 
 variable "domain_name" {
-  default = "set30.space"
+  default = "3ureka.com"
 }
