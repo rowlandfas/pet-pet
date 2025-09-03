@@ -5,15 +5,15 @@ provider "aws" {
 
 terraform {
   backend "s3" {
-    bucket       = "pet-adoption-state-bucket-1133313317711lington"
+    bucket       = "rowbucket2025"
     use_lockfile = true
     key          = "infrastructure/terraform.tfstate"
     region       = "eu-west-3"
     encrypt      = true
-    # profile      = "pet-adoption"
+    # profile      = "default"
   }
 }
 
 provider "vault" {
-  address = "https://vault.3ureka.com"
-  token   = "hvs.zuawemqhSXtLuok9Sa7Y7ybh" }
+  address = "https://vault.selfdevops.space"
+  token   = "hvs.ZRrMMISGi2LDYT6c7cpjgbvW" }
