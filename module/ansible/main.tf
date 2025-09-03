@@ -94,7 +94,7 @@ resource "aws_iam_instance_profile" "ansible-profile" {
 resource "null_resource" "ansible-setup" {
   provisioner "local-exec" {
     command = <<EOT
-      aws s3 cp --recursive ${path.module}/script/ s3://pet-adoption-state-bucket-1/ansible-script/ 
+      aws s3 cp --recursive ${path.module}/script/ s3://rowbucket2025/ansible-script/ 
     EOT
   } 
 }
