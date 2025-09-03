@@ -10,8 +10,8 @@ pipeline {
         pollSCM('* * * * *') // Runs every minute
     }
     environment {
-        SLACKCHANNEL = '19th-may-pet-adoption-auto-discovery-project-team-1'
-        SLACKCREDENTIALS = credentials('slack')
+        SLACKCHANNEL = '11-aug-2025-pet-adoption-auto-discovery-project-eu-team-2'
+        SLACKCREDENTIALS = credentials('slack-cred')
     }
     
     stages {
