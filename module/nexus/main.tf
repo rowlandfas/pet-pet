@@ -198,5 +198,3 @@ EOT
     interpreter = [ "bash", "-c" ]
   }
 }
-
-}
