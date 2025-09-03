@@ -1,9 +1,9 @@
 #!/bin/bash
 
 # set variable for bucket-name
-BUCKET_NAME="pet-adoption-state-bucket-1133313317711lington"
+BUCKET_NAME="rowbucket2025"
 AWS_REGION="eu-west-3"
-AWS_PROFILE="pet-adoption"
+AWS_PROFILE="default"
 
 
 # create bucket
