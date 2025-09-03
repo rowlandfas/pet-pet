@@ -1,5 +1,5 @@
 locals {
-  name = "vault-jenkins-team1"
+  name = "row-vault-jenkins"
 }
 resource "aws_vpc" "vpc" {
   cidr_block       = "10.0.0.0/16"
@@ -253,7 +253,7 @@ resource "aws_security_group" "jenkins-elb-sg" {
 
 # Create elastic Load Balancer for Jenkins
 resource "aws_elb" "elb_jenkins" {
-  name            = "elb-jenkins"
+  name            = "${local.name}-elb-jenkins"
   security_groups = [aws_security_group.jenkins-elb-sg.id]
   subnets         = [aws_subnet.pub_sub.id]
 
