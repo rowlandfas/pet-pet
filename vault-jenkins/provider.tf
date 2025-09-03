@@ -13,7 +13,7 @@
 # create aws provider
 provider "aws" {
   region  = var.region
-  profile = "pet-adoption"
+  profile = "default"
 }
 
 terraform {
