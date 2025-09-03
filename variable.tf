@@ -1,10 +1,10 @@
 variable "nr-key" {
-  default = "NRAK-4FNJBSGOTULJ4XCZW4P2JOMPOKY"
+  default = "NRAK-R1E391EHZ2VM7H6RNKU3IIYKPT7"
 }
 variable "nr-acc-id" {
-  default = 6496342
+  default = 5144160
 }
 
 variable "domain_name" {
-  default = "3ureka.com"
+  default = "selfdevops.space"
 }
