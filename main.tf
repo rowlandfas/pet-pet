@@ -1,5 +1,5 @@
 locals {
-  name = "team-1"
+  name = "row"
 }
 
 data "aws_route53_zone" "zone" {
