@@ -1,12 +1,12 @@
 # provider "aws" {
 #   region  = var.region
-#   profile = "bukky_int"
+#   profile = "default"
 # }
 
 # # create aws provider
 # provider "aws" {
 #   region  = "eu-west-3"
-#   profile = "Lington"
+#   profile = "default"
 # }
 
 
@@ -18,11 +18,11 @@ provider "aws" {
 
 terraform {
   backend "s3" {
-    bucket       = "pet-adoption-state-bucket-1"
+    bucket       = "rowbucket2025"
     use_lockfile = true
     key          = "vault-jenkins/terraform.tfstate"
-    region       = "eu-west-1"
+    region       = "eu-west-3"
     encrypt      = true
-    profile      = "pet-adoption"
+    profile      = "default"
   }
 }
