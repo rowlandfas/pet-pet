@@ -5,7 +5,7 @@ set -x
 AWSCLI_PATH='/usr/local/bin/aws'
 INVENTORY_FILE='/etc/ansible/stage_hosts'
 IPS_FILE='/etc/ansible/stage.lists'
-ASG_NAME='team-1-stage-asg'
+ASG_NAME='row-stage-asg'
 SSH_KEY_PATH='~/.ssh/id_rsa'
 WAIT_TIME=20
 
