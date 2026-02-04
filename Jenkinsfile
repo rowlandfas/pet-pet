@@ -10,7 +10,7 @@ pipeline {
     }
 
     environment {
-        SLACKCHANNEL = '11-aug-2025-pet-adoption-auto-discovery-project-eu-team-2'
+        SLACKCHANNEL = '12th-january-2026-pet-adoption-auto-discovery-project-eu-team'
         SLACKCREDENTIALS = credentials('slack-cred')
     }
 
