@@ -9,22 +9,22 @@ pipeline {
         pollSCM('* * * * *') // Runs every minute
     }
 
-    // environment {
-    //     SLACKCHANNEL = '11-aug-2025-pet-adoption-auto-discovery-project-eu-team-2'
-    //     SLACKCREDENTIALS = credentials('slack-cred')
-    // }
+    environment {
+        SLACKCHANNEL = '11-aug-2025-pet-adoption-auto-discovery-project-eu-team-2'
+        SLACKCREDENTIALS = credentials('slack-cred')
+    }
 
-    // stages {
-    //     stage('IAC Scan') {
-    //         steps {
-    //             script {
-    //                 sh 'pip install pipenv'
-    //                 sh 'pipenv run pip install checkov'
-    //                 def checkovStatus = sh(script: 'pipenv run checkov -d . -o cli --output-file checkov-results.txt --quiet', returnStatus: true)
-    //                 junit allowEmptyResults: true, testResults: 'checkov-results.txt' 
-    //             }
-    //         }
-    //     }
+    stages {
+        stage('IAC Scan') {
+            steps {
+                script {
+                    sh 'pip install pipenv'
+                    sh 'pipenv run pip install checkov'
+                    def checkovStatus = sh(script: 'pipenv run checkov -d . -o cli --output-file checkov-results.txt --quiet', returnStatus: true)
+                    junit allowEmptyResults: true, testResults: 'checkov-results.txt' 
+                }
+            }
+        }
 
         stage('Install Terraform') {
             steps {
