@@ -8,7 +8,7 @@ terraform destroy -auto-approve
 echo "creating S3 bucket"
 
 # Using the same variables as ones used for creation
-BUCKET_NAME="rowbucket2025"
+BUCKET_NAME="rowbucket20255050"
 AWS_REGION="eu-west-3"
 AWS_PROFILE="default"
 
