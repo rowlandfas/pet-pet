@@ -6,5 +6,5 @@ variable "nr-acc-id" {
 }
 
 variable "domain_name" {
-  default = "selfdevops.space"
+  default = "seyi-prj2025.space"
 }
