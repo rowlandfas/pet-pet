@@ -2,7 +2,7 @@ variable "domain" {
 
   description = "The domain name for our pet adoption project"
   type        = string
-  default     = "selfdevops.space"
+  default     = "seyi-prj2025.space"
 }
 variable "region" {
   default = "eu-west-3"
