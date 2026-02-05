@@ -1,7 +1,7 @@
 #!/bin/bash
 
 # set variable for bucket-name
-BUCKET_NAME="rowbucket2025"
+BUCKET_NAME="rowbucket20255050"
 AWS_REGION="eu-west-3"
 AWS_PROFILE="default"
 
