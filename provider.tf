@@ -5,7 +5,7 @@ provider "aws" {
 
 terraform {
   backend "s3" {
-    bucket       = "rowbucket2025"
+    bucket       = "rowbucket20255050"
     # use_lockfile = true
     key          = "infrastructure/terraform.tfstate"
     region       = "eu-west-3"
