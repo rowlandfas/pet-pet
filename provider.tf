@@ -15,6 +15,6 @@ terraform {
 }
 
 provider "vault" {
-  address = "https://vault.selfdevops.space"
-  token   = "hvs.81Px0Yfb6VFAGhyS6zjCcgw2" 
+  address = "https://vault.seyi-prj2025.space"
+  token   = "hvs.9PLe9wBoncORIt2D7paTnfvg" 
 }
